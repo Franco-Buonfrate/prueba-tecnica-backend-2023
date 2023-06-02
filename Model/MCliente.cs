@@ -12,7 +12,7 @@ namespace Examen_backend_2023_Franco_Buonfrate.Model
         public string telefono { get; set; }
         public string email { get; set; }
         public string dni { get; set; }
-        public string cuil { get; set; }
+        public string cuit { get; set; }
 
     }
 }

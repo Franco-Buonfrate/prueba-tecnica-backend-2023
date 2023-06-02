@@ -19,30 +19,6 @@ namespace Examen_backend_2023_Franco_Buonfrate.Resources
             command.Connection = connection;
         }
 
-        public static DataSet ListarTablas(string comando)
-        {
-            try
-            {
-                command.Parameters.Clear();
-                connection.Open();
-                command.CommandText = comando;
-
-                DataSet tabla = new DataSet();
-                SqlDataAdapter da = new SqlDataAdapter(command);
-                da.Fill(tabla);
-
-                return tabla;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-            finally
-            {
-                connection.Close();
-            }
-        }
-
         public static DataTable Listar(string comando)
         {
             try

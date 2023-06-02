@@ -1,4 +1,7 @@
-﻿using System.Security.Claims;
+﻿using Examen_backend_2023_Franco_Buonfrate.Resources;
+using Newtonsoft.Json;
+using System.Data;
+using System.Security.Claims;
 
 namespace Examen_backend_2023_Franco_Buonfrate.Model
 {
@@ -23,6 +26,20 @@ namespace Examen_backend_2023_Franco_Buonfrate.Model
                         result = ""
                     };
                 }
+
+                var user = identity.Claims.FirstOrDefault(x => x.Type == "usuario").Value;
+                var pass = identity.Claims.FirstOrDefault(x => x.Type == "password").Value;
+
+                DataTable tUsuarios = DataDB.Listar("select * from usuario_acceso");
+                string jsonUsuarios = JsonConvert.SerializeObject(tUsuarios);
+                MUsuario usuario = JsonConvert.DeserializeObject<List<MUsuario>>(jsonUsuarios).Where(x => x.usuario == user && x.password == pass).FirstOrDefault();
+
+                return new
+                {
+                    success = true,
+                    message = "exito",
+                    result = usuario
+                };
             }
             catch(Exception ex)
             {

@@ -3,6 +3,7 @@ using Examen_backend_2023_Franco_Buonfrate.Resources;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -32,41 +33,49 @@ namespace Examen_backend_2023_Franco_Buonfrate.Controllers
 
             DataTable tUsuarios = DataDB.Listar("select * from usuario_acceso");
             string jsonUsuarios = JsonConvert.SerializeObject(tUsuarios);
-
-
-
             MUsuario usuario = JsonConvert.DeserializeObject<List<MUsuario>>(jsonUsuarios).Where(x => x.usuario == user && x.password == pass).FirstOrDefault();
 
-            var jwt = _configuration.GetSection("Jwt").Get<Jwt>();
-
-            var claims = new[]
+            if (usuario != null)
             {
-                new Claim(JwtRegisteredClaimNames.Sub, jwt.Subject),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                new Claim("usuario", usuario.usuario),
-                new Claim("password", usuario.password)
+                var jwt = _configuration.GetSection("Jwt").Get<Jwt>();
 
-        };
+                var claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, jwt.Subject),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                    new Claim("usuario", usuario.usuario),
+                    new Claim("password", usuario.password)
+                };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
 
-            var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                    jwt.Issuer,
-                    jwt.Audience,
-                    claims,
-                    expires: DateTime.Now.AddMinutes(60),
-                    signingCredentials: signIn
-                ) ;
+                var token = new JwtSecurityToken(
+                        jwt.Issuer,
+                        jwt.Audience,
+                        claims,
+                        expires: DateTime.Now.AddMinutes(60),
+                        signingCredentials: signIn
+                    ) ;
 
-            return new
+                return new
+                {
+                    success = true,
+                    message = "exito",
+                    result = new JwtSecurityTokenHandler().WriteToken(token)
+                };
+            }
+            else
             {
-                success = true,
-                message = "exito",
-                result = new JwtSecurityTokenHandler().WriteToken(token)
-            };
+                return new
+                {
+                    success = false,
+                    message = "Invalid User",
+                    result = ""
+                };
+            }
         }
     }
 }
